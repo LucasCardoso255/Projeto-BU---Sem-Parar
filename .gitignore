@@ -47,3 +47,6 @@ desktop.ini
 # Arquivos de backup
 *.bak
 *.swp
+
+*.xlsx
+
