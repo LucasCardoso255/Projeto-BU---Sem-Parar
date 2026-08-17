@@ -1,12 +1,12 @@
 {
   "dependencies": {
-    "exceljs": "^4.4.0"
+    "exceljs": "^4.4.0",
+    "playwright": "^1.62.1"
   },
   "name": "projeto-bu",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

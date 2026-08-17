@@ -54,21 +54,105 @@ function normalizarSituacao(texto) {
         .toLowerCase();
 }
 
+export function identificarRespostaVT(html) {
+    if (!html || !String(html).trim()) {
+        return {
+            tipo: "vazia",
+            mensagem: "Resposta vazia"
+        };
+    }
+
+    const raw = String(html);
+    const texto = normalizar(raw
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/gi, " ")
+    );
+
+    const challengePatterns = [
+        "attention required",
+        "cloudflare",
+        "please enable cookies",
+        "verify you are human",
+        "cf-challenge",
+        "captcha",
+        "recaptcha",
+        "challenge",
+        "jschallenge",
+        "checking your browser"
+    ];
+
+    const challengeMatch = challengePatterns.find((pattern) => texto.includes(pattern));
+    if (challengeMatch) {
+        return {
+            tipo: "challenge",
+            mensagem: `Bloqueado pelo site (${challengeMatch})`,
+            raw
+        };
+    }
+
+    const hasStatus = /situacao.*bilhete.*unico|bilhete.*unico.*situacao|ativado|desativado|habilitado|desabilitado|solicitada/i.test(texto);
+    if (hasStatus) {
+        return {
+            tipo: "status",
+            mensagem: "HTML com status do Bilhete Único",
+            raw
+        };
+    }
+
+    return {
+        tipo: "desconhecida",
+        mensagem: "Resposta não reconhecida",
+        raw
+    };
+}
+
 export function obterSituacaoVT(html) {
+    if (!html) {
+        return "Resposta vazia";
+    }
+
+    const resposta = identificarRespostaVT(html);
+
+    if (resposta.tipo === "challenge") {
+        return resposta.mensagem;
+    }
+
+    if (resposta.tipo === "vazia") {
+        return resposta.mensagem;
+    }
+
     const texto = normalizar(html);
 
-    const match = texto.match(
-        /situacao(?:\s+atual)?(?:\s+do)?\s+bilhete\s+unico(?:\s+intermunicipal)?\s*:\s*([^<]+)/
-    );
+    const padroes = [
+        /situacao(?:\s+atual)?(?:\s+do)?\s+bilhete\s+unico(?:\s+intermunicipal)?\s*[:\-]?\s*([^<]+)/i,
+        /(?:situacao|status)(?:\s+atual)?(?:\s+do|\s+de)?\s+bilhete\s+unico(?:\s+intermunicipal)?\s*[:\-]?\s*([^<]+)/i,
+        /bilhete\s+unico(?:\s+intermunicipal)?(?:\s+do|\s+de)?\s*(?:situacao|status)\s*[:\-]?\s*([^<]+)/i
+    ];
+
+    let match = null;
+
+    for (const padrao of padroes) {
+        match = texto.match(padrao);
+        if (match) break;
+    }
+
+    if (!match) {
+        const fallback = texto.match(/(?:ativado|desativado|habilitado|desabilitado|ativacao solicitada|solicitada|invalido)/i);
+        if (fallback) {
+            match = [fallback[0], fallback[0]];
+        }
+    }
 
     if (!match) {
         return "Situação do Bilhete Único não encontrada";
     }
 
-    const situacaoOriginal = match[1].trim();
+    const situacaoOriginal = (match[1] || match[0]).trim();
     const situacao = normalizarSituacao(situacaoOriginal);
 
-    if (situacao.includes("desativado")) {
+    if (situacao.includes("desativado") || situacao.includes("desabilitado")) {
         return "Desativado";
     }
 
@@ -76,9 +160,17 @@ export function obterSituacaoVT(html) {
         return "Ativação solicitada";
     }
 
-    if (/\bativado\b/.test(situacao)) {
+    if (/\bativado\b/.test(situacao) || situacao.includes("habilitado")) {
         return "Ativado";
     }
 
-    return "Situação não identificada";
+    if (situacao.includes("invalido")) {
+        return "Inválido";
+    }
+
+    if (situacao.includes("sem") && situacao.includes("registro")) {
+        return "Sem registro";
+    }
+
+    return situacao || "Situação não identificada";
 }
