@@ -1,0 +1,68 @@
+{
+  "cookies": [
+    {
+      "name": "JSESSIONID",
+      "value": "0F26BB1FDDE6297A5C14059FA0A70064",
+      "domain": "www.cartaoriocard.com.br",
+      "path": "/vt2",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__cf_bm",
+      "value": "morpocFNfiu_ZMlL6hhm0Ai54rVz1Vpyix7MW9wh_tg-1786972975.4457173-1.0.1.1-3SZ79v_.D2VYQXFz4Abt0.EOOsfgxHzZcN4KDTJWrPFOzo5_98oTJjjNCLxapwJcjNGLBHcHdLg_F1s9dJaMFIfACI0PQLFhRH6aWrBPSnT6QDouAX1htj6tmoIZ_5jO",
+      "domain": ".cartaoriocard.com.br",
+      "path": "/",
+      "expires": 1786974776.429101,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__utma",
+      "value": "208625536.881711637.1786972977.1786972977.1786972977.1",
+      "domain": ".cartaoriocard.com.br",
+      "path": "/",
+      "expires": 1821532976.797577,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmb",
+      "value": "208625536",
+      "domain": ".cartaoriocard.com.br",
+      "path": "/",
+      "expires": 1786974776,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmc",
+      "value": "208625536",
+      "domain": ".cartaoriocard.com.br",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmz",
+      "value": "208625536.1786972977.1.1.utmccn=(direct)|utmcsr=(direct)|utmcmd=(none)",
+      "domain": ".cartaoriocard.com.br",
+      "path": "/",
+      "expires": 1802740976,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "expiresAt": 1786994576903,
+  "createdAt": 1786972976903,
+  "url": "https://www.cartaoriocard.com.br/vt2/visitante/consultas/ConsultaCpf.do",
+  "title": "Tarifas de Entrega - Vale-Transporte - Riocard Mais"
+}

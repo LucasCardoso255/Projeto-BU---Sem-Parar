@@ -80,5 +80,30 @@ export function obterSituacaoVT(html) {
         return "Ativado";
     }
 
-    return "Situação não identificada";
+    if (situacao.includes("invalido")) {
+        return "Inválido";
+    }
+
+    if (
+        (situacao.includes("no") && situacao.includes("possui") && situacao.includes("bu")) ||
+        situacao.includes("nao possui bu")
+    ) {
+        return "Não possui BU";
+    }
+
+    if (situacao.includes("suspenso setrans motivo")) {
+        const matchMotivo = situacao.match(/suspenso\s+setrans\s+motivo\s+(\d+)/);
+
+        if (matchMotivo) {
+            return `Suspenso SETRANS Motivo ${matchMotivo[1]}`;
+        }
+
+        return `Suspenso SETRANS ${matchMotivo[1]}`;
+    }
+
+    if (situacao.includes("sem") && situacao.includes("registro")) {
+        return "Sem registro";
+    }
+
+    return formatarSituacao(situacao) || "Situação não identificada";
 }
