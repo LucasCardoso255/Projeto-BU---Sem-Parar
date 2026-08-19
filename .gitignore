@@ -49,5 +49,6 @@ desktop.ini
 *.swp
 
 *.xlsx
-debug/
+debug/*
+.vt_session
 
