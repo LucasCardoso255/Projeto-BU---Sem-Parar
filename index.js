@@ -13,7 +13,8 @@ import {
     getWorksheet,
     isCellEmpty,
     validateCpfs,
-    formatHeader
+    formatHeader,
+    formatColumns
 } from "./cpf.js";
 
 async function saveHttpResponseDebug(cpf, responseText, extra = {}) {
@@ -102,11 +103,21 @@ function formatDateTime(value = new Date()) {
     }).format(date);
 }
 
-function getCloudflareWarningMessage(message = "") {
-    const text = String(message || "").toLowerCase();
+function formatRetryTime(seconds) {
+    const retryAt = new Date(Date.now() + Math.max(0, Number(seconds) || 0) * 1000);
+    return formatDateTime(retryAt);
+}
 
-    if (/attention required|cloudflare|403|forbidden/.test(text)) {
-        return "Bloqueio pela Cloudflare detectado. Aguarde alguns minutos e tente novamente.";
+function getCloudflareWarningMessage(message = "", metadata = {}) {
+    const text = `${String(message || "")} ${metadata.statusText || ""} ${JSON.stringify(metadata.headers || {})}`.toLowerCase();
+
+    if (/attention required|cloudflare|403|forbidden|429|too many requests|rate.?limit|challenge|cf-ray|cf-mitigated/.test(text)) {
+        const retryAfterSeconds = Number(metadata.retryAfterSeconds);
+        if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0) {
+            return `Bloqueio ou limite de consultas pela Cloudflare detectado. Tente novamente após ${Math.ceil(retryAfterSeconds / 60)} minutos (a partir de ${formatRetryTime(retryAfterSeconds)}).`;
+        }
+
+        return "Bloqueio ou limite de consultas pela Cloudflare detectado. Aguarde alguns minutos e tente novamente.";
     }
 
     return "Erro na consulta. Aguarde alguns minutos e tente novamente.";
@@ -153,10 +164,18 @@ async function consultarSituacaoVT(cpf, sessionPayload = null) {
             });
         }
 
-        const resposta = identificarRespostaVT(html);
+        const responseMetadata = {
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries())
+        };
+        const resposta = identificarRespostaVT(html, responseMetadata);
 
         if (resposta.tipo === "challenge") {
-            const warning = getCloudflareWarningMessage(resposta.mensagem);
+            const warning = getCloudflareWarningMessage(resposta.mensagem, {
+                ...responseMetadata,
+                retryAfterSeconds: resposta.retryAfterSeconds
+            });
             console.warn(
                 "Resposta bloqueada por challenge/Cloudflare:",
                 resposta.mensagem
@@ -168,8 +187,18 @@ async function consultarSituacaoVT(cpf, sessionPayload = null) {
             };
         }
 
+        const status = obterSituacaoVT(html);
+        if (status === "Situação do Bilhete Único não encontrada") {
+            const retryAfterSeconds = Number(resposta.retryAfterSeconds) || 10 * 60;
+            return {
+                status: "Resposta não reconhecida",
+                warning: `Resposta do site não reconhecida; pode ser bloqueio ou limite de consultas. Tente novamente após ${Math.ceil(retryAfterSeconds / 60)} minutos (a partir de ${formatRetryTime(retryAfterSeconds)}). Consulte o arquivo de debug.`,
+                blocked: true
+            };
+        }
+
         return {
-            status: obterSituacaoVT(html),
+            status,
             warning: "",
             blocked: false
         };
@@ -229,13 +258,15 @@ function getCpfRowsToProcess(sheet) {
 async function atualizarStatusNaPlanilha() {
     const { workbook, sheet } = await getWorksheet();
     const results = validateCpfs(sheet);
+    const statusColumn = getColumnByHeader(sheet, appConfig.execution.statusHeaders) ?? findOrCreateColumn(sheet, "STATUS VT", 3);
+    const dataColumn = findOrCreateColumn(sheet, "DATA CONSULTA BU", statusColumn + 1);
+    const avisoColumn = findOrCreateColumn(sheet, "OBSERVAÇÕES", dataColumn + 1);
     const targetRows = shouldProcessOnlyMissingStatus()
         ? getCpfRowsToProcess(sheet)
         : results.filter((result) => result.valid);
 
-    const statusColumn = getColumnByHeader(sheet, appConfig.execution.statusHeaders) ?? findOrCreateColumn(sheet, "STATUS VT", 3);
-    const dataColumn = findOrCreateColumn(sheet, "DATA CONSULTA BU", statusColumn + 1);
-    const avisoColumn = findOrCreateColumn(sheet, "OBSERVAÇÕES", dataColumn + 1);
+    formatColumns(sheet);
+    await workbook.xlsx.writeFile(filePath);
 
     const sessionPayload = await ensureFreshSession().then((info) => info.session ?? getSessionPayload());
 
@@ -254,6 +285,8 @@ async function atualizarStatusNaPlanilha() {
         statusCell.value = consulta.status;
         dataCell.value = agora;
         avisoCell.value = consulta.warning || "";
+        formatColumns(sheet);
+        await workbook.xlsx.writeFile(filePath);
 
         console.log(`${cpf} → ${consulta.status}`);
         if (consulta.warning) {

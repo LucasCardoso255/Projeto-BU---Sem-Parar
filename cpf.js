@@ -1,7 +1,7 @@
 import ExcelJS from "exceljs";
 
 export const filePath = "BUI_salarios_abaixo_3205.xlsx";
-export const sheetName = "teste";
+export const sheetName = "QUE NÃO TEM";
 
 export async function getWorksheet() {
     const workbook = new ExcelJS.Workbook();
@@ -90,6 +90,27 @@ export function formatHeader(sheet, column) {
     };
 
     sheet.getColumn(column).width = String(cell.value).length + 2;
+}
+
+export function formatColumns(sheet) {
+    for (let columnNumber = 1; columnNumber <= sheet.columnCount; columnNumber++) {
+        const column = sheet.getColumn(columnNumber);
+        let maxLength = 0;
+
+        for (let rowNumber = 1; rowNumber <= sheet.rowCount; rowNumber++) {
+            const value = sheet.getCell(rowNumber, columnNumber).value;
+            const text = value === null || value === undefined ? "" : String(value);
+            maxLength = Math.max(maxLength, ...text.split(/\r?\n/).map((line) => line.length));
+        }
+
+        const header = String(sheet.getCell(1, columnNumber).value ?? "").toLowerCase();
+        const maxWidth = header.includes("observ") ? 70 : 45;
+        column.width = Math.min(Math.max(maxLength + 2, 12), maxWidth);
+
+        if (header.includes("observ")) {
+            column.alignment = { wrapText: true, vertical: "top" };
+        }
+    }
 }
 
 await getWorksheet()
