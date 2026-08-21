@@ -113,4 +113,3 @@ export function formatColumns(sheet) {
     }
 }
 
-await getWorksheet()

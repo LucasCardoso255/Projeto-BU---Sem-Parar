@@ -54,45 +54,12 @@ function normalizarSituacao(texto) {
         .toLowerCase();
 }
 
-function getRetryAfterSeconds(html, metadata, responseStatus) {
-    const headers = metadata.headers || {};
-    const retryAfter = headers["retry-after"] ?? headers["Retry-After"];
-
-    if (retryAfter) {
-        const seconds = Number(retryAfter);
-        if (Number.isFinite(seconds) && seconds >= 0) {
-            return seconds;
-        }
-
-        const retryDate = Date.parse(retryAfter);
-        if (Number.isFinite(retryDate)) {
-            return Math.max(0, Math.ceil((retryDate - Date.now()) / 1000));
-        }
-    }
-
-    const refreshMatch = String(html).match(/<meta[^>]+http-equiv=["']?refresh["']?[^>]+content=["']?(\d+)/i)
-        || String(html).match(/<meta[^>]+content=["']?(\d+)[^"']*["']?[^>]+http-equiv=["']?refresh/i);
-    if (refreshMatch) {
-        return Number(refreshMatch[1]);
-    }
-
-    if (responseStatus === 429 || responseStatus === 503) {
-        return 15 * 60;
-    }
-
-    return 10 * 60;
-}
-
-export function identificarRespostaVT(html, metadata = {}) {
+export function identificarRespostaVT(html) {
     if (!html || !String(html).trim()) {
         return { tipo: "vazia", mensagem: "Resposta vazia" };
     }
 
     const raw = String(html);
-    const responseStatus = Number(metadata.status);
-    const responseHeaders = Object.entries(metadata.headers || {})
-        .map(([name, value]) => `${name}: ${value}`)
-        .join(" ");
     const texto = normalizar(raw
         .replace(/<script[\s\S]*?<\/script>/gi, " ")
         .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -110,31 +77,14 @@ export function identificarRespostaVT(html, metadata = {}) {
         "recaptcha",
         "challenge",
         "jschallenge",
-        "checking your browser",
-        "just a moment",
-        "enable javascript and cookies",
-        "challenge-platform",
-        "too many requests",
-        "rate limit",
-        "rate_limit",
-        "cf-mitigated"
+        "checking your browser"
     ];
 
-    const challengeMatch = challengePatterns.find((pattern) =>
-        texto.includes(pattern) || normalizar(responseHeaders).includes(pattern)
-    );
-    const isRateLimited = responseStatus === 429 || responseStatus === 503;
-    const isCloudflareResponse = /cloudflare|cf-ray|cf-mitigated/i.test(responseHeaders);
-
-    if (isRateLimited || isCloudflareResponse || challengeMatch) {
-        const reason = isRateLimited
-            ? `HTTP ${responseStatus}`
-            : challengeMatch || "Cloudflare";
-
+    const challengeMatch = challengePatterns.find((pattern) => texto.includes(pattern));
+    if (challengeMatch) {
         return {
             tipo: "challenge",
-            mensagem: `Bloqueio ou limite de consultas detectado (${reason})`,
-            retryAfterSeconds: getRetryAfterSeconds(raw, metadata, responseStatus),
+            mensagem: `Bloqueado pelo site (${challengeMatch})`,
             raw
         };
     }
@@ -144,12 +94,7 @@ export function identificarRespostaVT(html, metadata = {}) {
         return { tipo: "status", mensagem: "HTML com status do Bilhete Unico", raw };
     }
 
-    return {
-        tipo: "desconhecida",
-        mensagem: "Resposta nao reconhecida",
-        retryAfterSeconds: getRetryAfterSeconds(raw, metadata, responseStatus),
-        raw
-    };
+    return { tipo: "desconhecida", mensagem: "Resposta nao reconhecida", raw };
 }
 
 export function obterSituacaoVT(html) {
@@ -196,7 +141,7 @@ export function obterSituacaoVT(html) {
             return `Suspenso SETRANS Motivo ${matchMotivo[1]}`;
         }
 
-        return `Suspenso SETRANS ${matchMotivo[1]}`;
+        return "Suspenso SETRANS";
     }
 
     if (situacao.includes("sem") && situacao.includes("registro")) {
