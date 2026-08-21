@@ -54,6 +54,49 @@ function normalizarSituacao(texto) {
         .toLowerCase();
 }
 
+export function identificarRespostaVT(html) {
+    if (!html || !String(html).trim()) {
+        return { tipo: "vazia", mensagem: "Resposta vazia" };
+    }
+
+    const raw = String(html);
+    const texto = normalizar(raw
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/gi, " ")
+    );
+
+    const challengePatterns = [
+        "attention required",
+        "cloudflare",
+        "please enable cookies",
+        "verify you are human",
+        "cf-challenge",
+        "captcha",
+        "recaptcha",
+        "challenge",
+        "jschallenge",
+        "checking your browser"
+    ];
+
+    const challengeMatch = challengePatterns.find((pattern) => texto.includes(pattern));
+    if (challengeMatch) {
+        return {
+            tipo: "challenge",
+            mensagem: `Bloqueado pelo site (${challengeMatch})`,
+            raw
+        };
+    }
+
+    const hasStatus = /situacao.*bilhete.*unico|bilhete.*unico.*situacao|ativado|desativado|habilitado|desabilitado|solicitada/i.test(texto);
+    if (hasStatus) {
+        return { tipo: "status", mensagem: "HTML com status do Bilhete Unico", raw };
+    }
+
+    return { tipo: "desconhecida", mensagem: "Resposta nao reconhecida", raw };
+}
+
 export function obterSituacaoVT(html) {
     const texto = normalizar(html);
 
@@ -98,7 +141,7 @@ export function obterSituacaoVT(html) {
             return `Suspenso SETRANS Motivo ${matchMotivo[1]}`;
         }
 
-        return `Suspenso SETRANS ${matchMotivo[1]}`;
+        return "Suspenso SETRANS";
     }
 
     if (situacao.includes("sem") && situacao.includes("registro")) {

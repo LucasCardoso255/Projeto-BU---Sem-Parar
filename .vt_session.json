@@ -2,7 +2,7 @@
   "cookies": [
     {
       "name": "JSESSIONID",
-      "value": "0F26BB1FDDE6297A5C14059FA0A70064",
+      "value": "C28A521F8537ADB8713B01A6B9559EC2",
       "domain": "www.cartaoriocard.com.br",
       "path": "/vt2",
       "expires": -1,
@@ -12,20 +12,20 @@
     },
     {
       "name": "__cf_bm",
-      "value": "morpocFNfiu_ZMlL6hhm0Ai54rVz1Vpyix7MW9wh_tg-1786972975.4457173-1.0.1.1-3SZ79v_.D2VYQXFz4Abt0.EOOsfgxHzZcN4KDTJWrPFOzo5_98oTJjjNCLxapwJcjNGLBHcHdLg_F1s9dJaMFIfACI0PQLFhRH6aWrBPSnT6QDouAX1htj6tmoIZ_5jO",
+      "value": "0JxkI5PUE16Z6FA4yG7i8yYum4uZbPoBrJgTEvPWDsM-1787316488.5418997-1.0.1.1-FwfA_F37vn2pEzIaG1617BgL.DieLOL3nDkPJGwR2vplC_Yo9WNLmBKWgiLITVtb3nZZD8XGAnshZDzfWmPVfsjLF0uYix8nyKwyuz2VfYy70R8GC8y.6ULRYUuAj19z",
       "domain": ".cartaoriocard.com.br",
       "path": "/",
-      "expires": 1786974776.429101,
+      "expires": 1787318289.213853,
       "httpOnly": true,
       "secure": true,
       "sameSite": "None"
     },
     {
       "name": "__utma",
-      "value": "208625536.881711637.1786972977.1786972977.1786972977.1",
+      "value": "208625536.813232856.1787316490.1787316490.1787316490.1",
       "domain": ".cartaoriocard.com.br",
       "path": "/",
-      "expires": 1821532976.797577,
+      "expires": 1821876490.164741,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -35,7 +35,7 @@
       "value": "208625536",
       "domain": ".cartaoriocard.com.br",
       "path": "/",
-      "expires": 1786974776,
+      "expires": 1787318290,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -52,17 +52,66 @@
     },
     {
       "name": "__utmz",
-      "value": "208625536.1786972977.1.1.utmccn=(direct)|utmcsr=(direct)|utmcmd=(none)",
+      "value": "208625536.1787316490.1.1.utmccn=(direct)|utmcsr=(direct)|utmcmd=(none)",
       "domain": ".cartaoriocard.com.br",
       "path": "/",
-      "expires": 1802740976,
+      "expires": 1803084490,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     }
   ],
-  "expiresAt": 1786994576903,
-  "createdAt": 1786972976903,
+  "jsessionId": "C28A521F8537ADB8713B01A6B9559EC2",
+  "fingerprint": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "platform": "Win32",
+    "language": "pt-BR",
+    "languages": [
+      "pt-BR"
+    ],
+    "acceptLanguage": "pt-BR,pt;q=0.9",
+    "locale": "pt-BR",
+    "timezone": "America/Sao_Paulo",
+    "timezoneOffset": 180,
+    "viewport": {
+      "width": 1280,
+      "height": 900,
+      "deviceScaleFactor": 1.0000000298023224
+    },
+    "screen": {
+      "width": 1280,
+      "height": 900,
+      "colorDepth": 24,
+      "pixelDepth": 24
+    }
+  },
+  "requestHeaders": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "pt-BR,pt;q=0.9",
+    "Cache-Control": "no-cache",
+    "Connection": "keep-alive",
+    "Cookie": "JSESSIONID=C28A521F8537ADB8713B01A6B9559EC2; __cf_bm=0JxkI5PUE16Z6FA4yG7i8yYum4uZbPoBrJgTEvPWDsM-1787316488.5418997-1.0.1.1-FwfA_F37vn2pEzIaG1617BgL.DieLOL3nDkPJGwR2vplC_Yo9WNLmBKWgiLITVtb3nZZD8XGAnshZDzfWmPVfsjLF0uYix8nyKwyuz2VfYy70R8GC8y.6ULRYUuAj19z; __utma=208625536.813232856.1787316490.1787316490.1787316490.1; __utmb=208625536; __utmc=208625536; __utmz=208625536.1787316490.1.1.utmccn=(direct)|utmcsr=(direct)|utmcmd=(none)",
+    "DNT": "1",
+    "Origin": "https://www.cartaoriocard.com.br",
+    "Referer": "https://www.cartaoriocard.com.br/vt2/visitante/consultas/ConsultaCpf.do",
+    "Upgrade-Insecure-Requests": "1",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+  },
+  "browser": {
+    "name": "chromium",
+    "version": "151.0.7922.34",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "platform": "Win32",
+    "viewport": {
+      "width": 1280,
+      "height": 900,
+      "deviceScaleFactor": 1.0000000298023224
+    },
+    "timezone": "America/Sao_Paulo",
+    "locale": "pt-BR"
+  },
+  "expiresAt": 1787338090244,
+  "createdAt": 1787316490244,
   "url": "https://www.cartaoriocard.com.br/vt2/visitante/consultas/ConsultaCpf.do",
   "title": "Tarifas de Entrega - Vale-Transporte - Riocard Mais"
 }

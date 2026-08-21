@@ -29,11 +29,37 @@ function hasValidSession(session) {
         return false;
     }
 
+    if (!session.cookies.some((cookie) => cookie?.name === "JSESSIONID")) {
+        return false;
+    }
+
     if (!session.expiresAt || Date.now() > session.expiresAt) {
         return false;
     }
 
+    const nowInSeconds = Date.now() / 1000;
+    const criticalCookies = new Set(["JSESSIONID", "__cf_bm", "cf_clearance"]);
+    const hasExpiredCriticalCookie = session.cookies.some((cookie) =>
+        criticalCookies.has(cookie?.name) &&
+        Number(cookie.expires) > 0 &&
+        nowInSeconds >= Number(cookie.expires)
+    );
+
+    if (hasExpiredCriticalCookie) {
+        return false;
+    }
+
     return true;
+}
+
+function getActiveCookies(session) {
+    const nowInSeconds = Date.now() / 1000;
+
+    return (Array.isArray(session?.cookies) ? session.cookies : []).filter((cookie) =>
+        cookie &&
+        cookie.name &&
+        (Number(cookie.expires) <= 0 || nowInSeconds < Number(cookie.expires))
+    );
 }
 
 async function captureBrowserFingerprint(page) {
@@ -83,7 +109,7 @@ async function captureBrowserFingerprint(page) {
 }
 
 function buildRequestHeaders(session) {
-    const cookies = Array.isArray(session?.cookies) ? session.cookies : [];
+    const cookies = getActiveCookies(session);
     const cookieHeader = cookies
         .filter((cookie) => cookie && cookie.name)
         .map((cookie) => `${cookie.name}=${cookie.value}`)
