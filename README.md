@@ -31,7 +31,7 @@ O processo reutiliza a sessão do site de consulta já adotada pelo projeto. Cas
 
 ## Regras da planilha
 
-- Aba obrigatória: `QUE NÃO TEM`;
+- Aba obrigatória: `QUE NÃO TEM`; (Nome temporário, só utilizei o titulo da planilha de exemplo que recebi)
 - Coluna obrigatória: `CPF`;
 - As colunas `STATUS VT`, `DATA CONSULTA BU` e `OBSERVAÇÕES` são criadas quando ausentes;
 - CPFs inválidos não impedem o lote: recebem uma observação e os CPFs válidos seguem para consulta.
