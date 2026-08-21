@@ -51,4 +51,5 @@ desktop.ini
 *.xlsx
 debug/*
 .vt_session*
+.vt_session.json
 

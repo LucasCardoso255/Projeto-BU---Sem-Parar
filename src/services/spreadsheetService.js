@@ -8,7 +8,21 @@ const CPF_HEADERS = ["CPF", "CPF DO TITULAR", "CPF BENEFICIÁRIO"];
 const text = value => String(value?.text ?? value?.result ?? value ?? "").trim();
 const digits = value => text(value).replace(/\D/g, "");
 const normalizeHeader = value => text(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-const isValidCpf = value => /^\d{11}$/.test(digits(value));
+
+function getCpfDigits(cell) {
+    const rawValue = cell.value?.result ?? cell.value;
+    const cpf = digits(rawValue);
+    const zeroPlaceholders = String(cell.numFmt ?? "").replace(/[^0]/g, "").length;
+    const isNumericValue = typeof rawValue === "number" && Number.isInteger(rawValue);
+
+    if (isNumericValue && zeroPlaceholders === 11 && cpf.length < 11) {
+        return cpf.padStart(11, "0");
+    }
+
+    return cpf;
+}
+
+const isValidCpfCell = cell => /^\d{11}$/.test(getCpfDigits(cell));
 
 function findColumnByHeader(sheet, headers) {
     for (let column = 1; column <= Math.max(sheet.columnCount, 1); column++) {
@@ -59,10 +73,18 @@ export async function validateSpreadsheet(inputBuffer) {
         if (!cpfColumn) return { valid: false, errors: [{ code: "MISSING_CPF_COLUMN", message: "Não encontramos a coluna de CPF na planilha. Verifique se ela está identificada corretamente." }], warnings: [], metadata: {} };
 
         const rows = [];
-        for (let row = 2; row <= sheet.rowCount; row++) if (rowHasData(sheet, row)) rows.push({ row, value: sheet.getCell(row, cpfColumn).value });
+        for (let row = 2; row <= sheet.rowCount; row++) {
+            if (rowHasData(sheet, row)) rows.push({ row, cell: sheet.getCell(row, cpfColumn) });
+        }
         if (!rows.length) return { valid: false, errors: [{ code: "NO_DATA", message: "A aba necessária não possui linhas de dados." }], warnings: [], metadata: {} };
 
-        const warnings = rows.filter(({ value }) => !isValidCpf(value)).map(({ row, value }) => ({ code: "INVALID_CPF", row, message: `Linha ${row}: ${text(value) ? "CPF não possui 11 dígitos" : "CPF ausente"}` }));
+        const warnings = rows
+            .filter(({ cell }) => !isValidCpfCell(cell))
+            .map(({ row, cell }) => ({
+                code: "INVALID_CPF",
+                row,
+                message: `Linha ${row}: ${text(cell.value) ? "CPF não possui 11 dígitos" : "CPF ausente"}`
+            }));
         return { valid: true, errors: [], warnings, metadata: { totalRows: rows.length, validCpfRows: rows.length - warnings.length, invalidCpfRows: warnings.length, processableRows: rows.length - warnings.length } };
     } catch {
         return { valid: false, errors: [{ code: "INVALID_WORKBOOK", message: "O arquivo enviado não parece ser uma planilha Excel válida." }], warnings: [], metadata: {} };
@@ -82,12 +104,13 @@ export async function processSpreadsheet({ inputBuffer, onProgress = () => {}, s
     const targets = [];
 
     for (let row = 2; row <= sheet.rowCount; row++) {
-        const cpf = sheet.getCell(row, cpfColumn).value;
+        const cpfCell = sheet.getCell(row, cpfColumn);
+        const cpf = getCpfDigits(cpfCell);
         if (!rowHasData(sheet, row)) continue;
-        if (!isValidCpf(cpf)) {
-            sheet.getCell(row, notesColumn).value = text(cpf) ? "CPF inválido: informe 11 dígitos." : "CPF ausente.";
+        if (!isValidCpfCell(cpfCell)) {
+            sheet.getCell(row, notesColumn).value = text(cpfCell.value) ? "CPF inválido: informe 11 dígitos." : "CPF ausente.";
         } else if (isMissingStatusValue(sheet.getCell(row, statusColumn).value)) {
-            targets.push({ row, cpf: digits(cpf) });
+            targets.push({ row, cpf });
         }
     }
 
